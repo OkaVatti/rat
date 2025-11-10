@@ -1,0 +1,14 @@
+name: rat
+version: 0.2.0
+authors:
+  - Lily <okavatti@proton.me>
+license: MIT
+
+crystal: ">= 1.18.2"
+
+targets:
+  rat:
+    main: main.cr
+
+  spec:
+    main: spec_helper.cr

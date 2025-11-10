@@ -1,0 +1,30 @@
+name: CI
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install deps (Crystal)
+        run: |
+          sudo apt-get update
+          # install dependencies for building crystal (libssl, libxml2 etc.)
+          sudo apt-get install -y build-essential curl gnupg apt-transport-https ca-certificates
+          curl -sSL https://dist.crystal-lang.org/apt/setup.sh | sudo bash
+          sudo apt-get update
+          sudo apt-get install -y crystal
+
+      - name: Show crystal version
+        run: crystal --version
+
+      - name: Run specs
+        run: crystal spec
+
+      - name: Build release
+        run: crystal build --release main.cr -o rat || true
