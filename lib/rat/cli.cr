@@ -1,3 +1,6 @@
+require "./formatter"
+require "./reader"
+
 module Rat
   class CLI
     @argv : Array(String)
@@ -67,14 +70,14 @@ module Rat
         rat — smart, minimal file viewer
         Usage:
           rat [options] [files...]
-            
+        
         Options:
-          --plain                Raw output mode (no decoration)
-          --fast                 Disable highlighting for large files
+          --plain                   Raw output mode (no decoration)
+          --fast                    Disable highlighting for large files
           --paging=auto|always|never
           --lines=START‑END       Show only inclusive line range (1‑based)
-          --max-lines=N           Stop after N lines
-          -h, --help             Show this help
+          --max-lines=N             Stop after N lines
+          -h, --help                Show this help
       HELP
     end
 
@@ -93,9 +96,15 @@ module Rat
 
       @files.each do |path|
         Formatter.print_header_if_needed(path, use_rich, @plain)
-        Reader.each_line(path, fast: @fast) do |line, line_num, first_line|
-          if @lines_range
-            start_i, stop_i = @lines_range
+
+        Reader.each_line(path) do |line, line_num, first_line|
+          # FIX: Change 'if @lines_range' to 'if range = @lines_range'.
+          # This creates a local 'range' variable that is guaranteed
+          # to be non-nil inside this block.
+          if range = @lines_range
+            # Now, deconstruct the local 'range' variable, not the
+            # instance variable '@lines_range'.
+            start_i, stop_i = range
             next if line_num < start_i
             break if line_num > stop_i
           end
