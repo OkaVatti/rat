@@ -1,0 +1,20 @@
+#!/usr/bin/env bash
+# Example hex viewer plugin
+
+# Read JSON-RPC request from stdin
+request=$(cat)
+
+# Parse the content field
+content=$(echo "$request" | jq -r '.params.content')
+
+# Generate hex dump
+result=$(echo "$content" | xxd -c 16)
+
+# Return JSON-RPC response
+cat <<EOF
+{
+  "jsonrpc": "2.0",
+  "result": "$result",
+  "id": 1
+}
+EOF

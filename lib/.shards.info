@@ -1,0 +1,12 @@
+---
+version: 1.0
+shards:
+  ssh2:
+    git: https://github.com/spider-gazelle/ssh2.cr.git
+    version: 1.7.2
+  safec:
+    git: https://github.com/mosop/safec.git
+    version: 0.2.1
+  git:
+    git: https://github.com/crystal-git/git.git
+    version: 0.5.3

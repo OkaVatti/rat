@@ -1,0 +1,7 @@
+{
+  "name": "hex-viewer",
+  "version": "1.0.0",
+  "executable": "hex-viewer",
+  "file_types": [".bin", ".exe", ".dat"],
+  "description": "Hexadecimal viewer for binary files"
+}

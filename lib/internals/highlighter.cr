@@ -1,99 +1,61 @@
-# internals/highlighter.cr
-# Improved lightweight highlighter and language detection.
+require "./language_config"
+
 module Highlighter
-  RESET         = "\e[0m"
-  BOLD          = "\e[1m"
-  KEYWORD_COLOR = "\e[33m" # yellow-ish
-  STRING_COLOR  = "\e[32m" # green
-  COMMENT_COLOR = "\e[90m" # bright black / grey
-  NUMBER_COLOR  = "\e[35m" # magenta-ish
+  RESET          = "\e[0m"
+  BOLD           = "\e[1m"
+  KEYWORD_COLOR  = "\e[33m"
+  STRING_COLOR   = "\e[32m"
+  COMMENT_COLOR  = "\e[90m"
+  NUMBER_COLOR   = "\e[35m"
+  OPERATOR_COLOR = "\e[36m"
+  FUNCTION_COLOR = "\e[94m"
 
-  # public: detect language from path or first line (shebang)
   def self.detect_language(path : String = "", first_line : String = "")
-    ext = File.extname(path).downcase
-    return "crystal" if ext == ".cr"
-    return "ruby" if ext == ".rb"
-    return "rust" if ext == ".rs"
-    return "python" if ext == ".py"
-    return "js" if %w(.js .jsx .ts .tsx).includes?(ext)
-    # try shebang
-    if first_line && first_line.starts_with?("#!")
-      return "python" if first_line.includes?("python")
-      return "ruby" if first_line.includes?("ruby")
-      return "node" if first_line.includes?("node") || first_line.includes?("nodejs")
-      return "sh" if first_line.includes?("sh") || first_line.includes?("bash")
+    lang = LanguageConfig.find_language(path, first_line)
+    lang ? lang.name : ""
+  end
+
+  def self.highlight(line : String, path : String = "", first_line : String = "") : String
+    lang_config = LanguageConfig.find_language(path, first_line)
+    return line unless lang_config
+
+    highlight_with_config(line, lang_config)
+  end
+
+  private def self.highlight_with_config(line : String, config : LanguageConfig::Syntax) : String
+    result = line.dup
+
+    if comment_single = config.comment_single
+      if idx = result.index(comment_single)
+        before = result[0...idx]
+        comment = result[idx..-1]
+        result = before + "#{COMMENT_COLOR}#{comment}#{RESET}"
+        return result
+      end
     end
-    "" # unknown
-  end
 
-  # Public entry: highlight a single line given a language (preferred) or path.
-  def self.highlight(line : String, path : String = "", first_line : String = "")
-    lang = detect_language(path, first_line)
-    case lang
-    when "crystal"
-      highlight_ruby_like(line)
-    when "ruby"
-      highlight_ruby_like(line)
-    when "rust"
-      highlight_rust(line)
-    when "python"
-      highlight_python(line)
-    when "js", "node"
-      highlight_js_like(line)
-    else
-      # fallback: minimal generic highlighting (numbers + strings + comments)
-      highlight_generic(line)
+    string_patterns = config.string_delimiters.map do |delim|
+      escaped_delim = Regex.escape(delim)
+      /#{escaped_delim}([^#{escaped_delim}\\]|\\.)*#{escaped_delim}/
     end
+
+    string_patterns.each do |pattern|
+      result = result.gsub(pattern) { |m| "#{STRING_COLOR}#{m}#{RESET}" }
+    end
+
+    if config.keywords.any?
+      keywords_rx = /\b(#{config.keywords.join("|")})\b/
+      result = result.gsub(keywords_rx) { |m| "#{KEYWORD_COLOR}#{m}#{RESET}" }
+    end
+
+    if number_pattern = config.number_pattern
+      result = result.gsub(/#{number_pattern}/) { |m| "#{NUMBER_COLOR}#{m}#{RESET}" }
+    end
+
+    result
   end
 
-  private def self.highlight_generic(line : String)
-    s = line
-    s = s.gsub(/"([^"\\]|\\.)*"|'([^'\\]|\\.)*'/) { |m| "#{STRING_COLOR}#{m}#{RESET}" }
-    s = s.gsub(/\b\d+(\.\d+)?\b/) { |m| "#{NUMBER_COLOR}#{m}#{RESET}" }
-    s = s.gsub(/#.*/) { |m| "#{COMMENT_COLOR}#{m}#{RESET}" } # naive for many languages
-    s
-  end
-
-  private def self.wrap_string_regex(line : String)
-    line = line.gsub(/"([^"\\]|\\.)*"|'([^'\\]|\\.)*'/) { |m| "#{STRING_COLOR}#{m}#{RESET}" }
-    line
-  end
-
-  private def self.highlight_ruby_like(line : String)
-    keywords = %w(def class module end if else elsif unless while for do return break next nil true false self super)
-    rx = /\b(#{keywords.join("|")})\b/
-    line = line.gsub(/#.*$/) { |m| "#{COMMENT_COLOR}#{m}#{RESET}" }
-    line = wrap_string_regex(line)
-    line = line.gsub(rx) { |m| "#{KEYWORD_COLOR}#{m}#{RESET}" }
-    line
-  end
-
-  private def self.highlight_rust(line : String)
-    keywords = %w(fn let mut pub impl struct enum match if else loop for while return break true false)
-    rx = /\b(#{keywords.join("|")})\b/
-    line = line.gsub(/\/\/.*$/) { |m| "#{COMMENT_COLOR}#{m}#{RESET}" }
-    line = wrap_string_regex(line)
-    line = line.gsub(rx) { |m| "#{KEYWORD_COLOR}#{m}#{RESET}" }
-    line = line.gsub(/\b\d+(\.\d+)?\b/) { |m| "#{NUMBER_COLOR}#{m}#{RESET}" }
-    line
-  end
-
-  private def self.highlight_python(line : String)
-    keywords = %w(def class if else elif for while return True False None import from as)
-    rx = /\b(#{keywords.join("|")})\b/
-    line = line.gsub(/#.*$/) { |m| "#{COMMENT_COLOR}#{m}#{RESET}" }
-    line = wrap_string_regex(line)
-    line = line.gsub(rx) { |m| "#{KEYWORD_COLOR}#{m}#{RESET}" }
-    line
-  end
-
-  private def self.highlight_js_like(line : String)
-    keywords = %w(function var let const if else return true false null import from export default)
-    rx = /\b(#{keywords.join("|")})\b/
-    line = line.gsub(/\/\/.*$/) { |m| "#{COMMENT_COLOR}#{m}#{RESET}" }
-    line = wrap_string_regex(line)
-    line = line.gsub(rx) { |m| "#{KEYWORD_COLOR}#{m}#{RESET}" }
-    line = line.gsub(/\b\d+(\.\d+)?\b/) { |m| "#{NUMBER_COLOR}#{m}#{RESET}" }
-    line
+  def self.strip_ansi(text : String) : String
+    text.gsub(/\e\[[0-9;]*m/, "")
   end
 end

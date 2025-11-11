@@ -1,0 +1,64 @@
+{
+  "languages": [
+    {
+      "name": "crystal",
+      "extensions": [".cr"],
+      "shebangs": ["crystal"],
+      "keywords": ["def", "class", "module", "end", "if", "else", "elsif", "unless", "while", "for", "do", "return", "break", "next", "nil", "true", "false", "self", "super", "require", "include", "extend", "private", "protected", "public"],
+      "comment_single": "#",
+      "string_delimiters": ["\"", "'"],
+      "number_pattern": "\\b\\d+(\\.\\d+)?\\b"
+    },
+    {
+      "name": "ruby",
+      "extensions": [".rb", ".rake"],
+      "shebangs": ["ruby"],
+      "keywords": ["def", "class", "module", "end", "if", "else", "elsif", "unless", "while", "for", "do", "return", "break", "next", "nil", "true", "false"],
+      "comment_single": "#",
+      "string_delimiters": ["\"", "'"],
+      "number_pattern": "\\b\\d+(\\.\\d+)?\\b"
+    },
+    {
+      "name": "python",
+      "extensions": [".py"],
+      "shebangs": ["python", "python3"],
+      "keywords": ["def", "class", "if", "else", "elif", "for", "while", "return", "True", "False", "None", "import", "from", "as"],
+      "comment_single": "#",
+      "string_delimiters": ["\"", "'"],
+      "number_pattern": "\\b\\d+(\\.\\d+)?\\b"
+    },
+    {
+      "name": "rust",
+      "extensions": [".rs"],
+      "shebangs": [],
+      "keywords": ["fn", "let", "mut", "pub", "impl", "struct", "enum", "match", "if", "else", "loop", "for", "while", "return", "break", "true", "false"],
+      "comment_single": "//",
+      "comment_multi_start": "/*",
+      "comment_multi_end": "*/",
+      "string_delimiters": ["\""],
+      "number_pattern": "\\b\\d+(\\.\\d+)?\\b"
+    },
+    {
+      "name": "javascript",
+      "extensions": [".js", ".jsx"],
+      "shebangs": ["node"],
+      "keywords": ["function", "var", "let", "const", "if", "else", "return", "true", "false", "null", "import", "from", "export", "default"],
+      "comment_single": "//",
+      "comment_multi_start": "/*",
+      "comment_multi_end": "*/",
+      "string_delimiters": ["\"", "'", "`"],
+      "number_pattern": "\\b\\d+(\\.\\d+)?\\b"
+    },
+    {
+      "name": "go",
+      "extensions": [".go"],
+      "shebangs": [],
+      "keywords": ["func", "var", "const", "if", "else", "for", "return", "true", "false", "nil", "import", "package", "type", "struct"],
+      "comment_single": "//",
+      "comment_multi_start": "/*",
+      "comment_multi_end": "*/",
+      "string_delimiters": ["\"", "`"],
+      "number_pattern": "\\b\\d+(\\.\\d+)?\\b"
+    }
+  ]
+}
