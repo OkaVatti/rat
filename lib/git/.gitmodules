@@ -1,3 +1,0 @@
-[submodule "submodules/crystal_lib"]
-	path = submodules/crystal_lib
-	url = https://github.com/mosop/crystal_lib.git

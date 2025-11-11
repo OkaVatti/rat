@@ -1,6 +1,0 @@
-require "safec"
-require "uri"
-require "./version"
-require "./lib/c"
-require "./lib/options"
-require "./lib/*"

@@ -1,2 +1,0 @@
-require "./version"
-require "./lib/*"
